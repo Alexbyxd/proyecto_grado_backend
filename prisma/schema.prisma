@@ -1,0 +1,317 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario    Int      @id @default(autoincrement())
+  id_rol        Int
+  id_sucursal   Int
+  nombre        String
+  apellido      String
+  email         String
+  password_hash String
+  createdAt     DateTime @default(now())
+  updateAt      DateTime @updatedAt
+  created_by    Int
+  updated_by    Int
+  is_active     Boolean
+  //Relaciones
+  rol           Rol      @relation(fields: [id_rol], references: [id_rol])
+  sucursal      Sucursal @relation(fields: [id_sucursal], references: [id_sucursal])
+
+  //para relacionar en otras tablas
+  deseo         Deseo[]
+  carrito       Carrito[]
+  pedido_online Pedido_Online[]
+  venta         Venta[]
+
+  //Campos unicos
+  @@unique([id_usuario, id_rol, id_sucursal])
+}
+
+model Rol {
+  id_rol      Int       @id @default(autoincrement())
+  nombre      String    @unique
+  descripcion String?
+  usuario     Usuario[]
+}
+
+model Sucursal {
+  id_sucursal   Int             @id @default(autoincrement())
+  nombre        String          @unique
+  direccion     String          @unique
+  telefono      String?
+  email         String?
+  is_active     Boolean
+  createdAt     DateTime        @default(now())
+  updateAt      DateTime        @updatedAt
+  created_by    Int
+  updated_by    Int
+  usuario       Usuario[]
+  inventario    Inventario[]
+  pedido_online Pedido_Online[]
+  venta         Venta[]
+}
+
+model Deseo {
+  id_deseo    Int @id @default(autoincrement())
+  id_usuario  Int
+  id_producto Int
+
+  //relaciones
+  usuario  Usuario  @relation(fields: [id_usuario], references: [id_usuario])
+  producto Producto @relation(fields: [id_producto], references: [id_producto])
+}
+
+model Producto {
+  id_producto  Int      @id @default(autoincrement())
+  nombre       String   @unique
+  descripcion  String
+  precio       Float
+  is_active    Boolean
+  id_categoria Int
+  id_marca     Int
+  id_talla     Int
+  id_color     Int
+  id_proveedor Int
+  createdAt    DateTime @default(now())
+  updateAt     DateTime @updatedAt
+  created_by   Int
+  updated_by   Int
+
+  //relaciones 
+  categoria Categoria @relation(fields: [id_categoria], references: [id_categoria])
+  marca     Marca     @relation(fields: [id_marca], references: [id_marca])
+  talla     Talla     @relation(fields: [id_talla], references: [id_talla])
+  color     Color     @relation(fields: [id_color], references: [id_color])
+  proveedor Proveedor @relation(fields: [id_proveedor], references: [id_proveedor])
+
+  //para relacionar en otras tablas
+  deseo          Deseo[]
+  img_producto   Img_Producto[]
+  inventario     Inventario[]
+  carrito        Carrito[]
+  detalle_pedido Detalle_Pedido[]
+  detalle_venta  Detalle_Venta[]
+  prod_prom      Producto_Promocion[]
+}
+
+model Categoria {
+  id_categoria Int      @id @default(autoincrement())
+  nombre       String   @unique
+  descripcion  String?
+  genero       String
+  createdAt    DateTime @default(now())
+  updateAt     DateTime @updatedAt
+  created_by   Int
+  updated_by   Int
+
+  //para relacionar con otras tablas
+  producto      Producto[]
+  img_categoria Img_Categoria[]
+}
+
+model Marca {
+  id_marca Int    @id @default(autoincrement())
+  nombre   String @unique
+
+  //para relacionar con otras tablas
+  producto Producto[]
+}
+
+model Talla {
+  id_talla Int    @id @default(autoincrement())
+  nombre   String @unique
+
+  //para relacionar con otras tablas
+  producto Producto[]
+}
+
+model Color {
+  id_color Int    @id @default(autoincrement())
+  nombre   String @unique
+
+  //para relacionar con otras tablas
+  producto Producto[]
+}
+
+model Proveedor {
+  id_proveedor Int      @id @default(autoincrement())
+  nombre       String
+  contacto     String   @unique
+  email        String   @unique
+  direccion    String   @unique
+  createdAt    DateTime @default(now())
+  updateAt     DateTime @updatedAt
+  created_by   Int
+  updated_by   Int
+
+  //para relacionar con otras tablas
+  producto Producto[]
+}
+
+model Img_Producto {
+  id_img_producto Int      @id @default(autoincrement())
+  id_producto     Int
+  url             String   @unique
+  es_principal    Boolean
+  orden           Int
+  created_at      DateTime @default(now())
+
+  //relaciones
+  producto Producto @relation(fields: [id_producto], references: [id_producto])
+}
+
+model Img_Categoria {
+  id_img_categoria Int      @id @default(autoincrement())
+  id_categoria     Int
+  url              String   @unique
+  created_at       DateTime @default(now())
+
+  //relaciones
+  categoria Categoria @relation(fields: [id_categoria], references: [id_categoria])
+}
+
+model Inventario {
+  id_inventario   Int      @id @default(autoincrement())
+  cantidad        Int
+  cantidad_minima Int
+  createdAt       DateTime @default(now())
+  updateAt        DateTime @updatedAt
+  created_by      Int
+  updated_by      Int
+  id_producto     Int
+  id_sucursal     Int
+
+  //relaciones
+  producto Producto @relation(fields: [id_producto], references: [id_producto])
+  sucursal Sucursal @relation(fields: [id_sucursal], references: [id_sucursal])
+}
+
+model Carrito {
+  id_carrito  Int @id @default(autoincrement())
+  cantidad    Int
+  id_usuario  Int
+  id_producto Int
+
+  //relaciones
+  usuario  Usuario  @relation(fields: [id_usuario], references: [id_usuario])
+  producto Producto @relation(fields: [id_producto], references: [id_producto])
+}
+
+model Pedido_Online {
+  id_pedido      Int      @id @default(autoincrement())
+  fecha_pedido   DateTime @default(now())
+  estado         String
+  total          Float
+  createdAt      DateTime @default(now())
+  updateAt       DateTime @updatedAt
+  created_by     Int
+  updated_by     Int
+  id_usuario     Int
+  id_sucursal    Int
+  id_metodo_pago Int
+
+  //relaciones
+  usuario     Usuario     @relation(fields: [id_usuario], references: [id_usuario])
+  sucursal    Sucursal    @relation(fields: [id_sucursal], references: [id_sucursal])
+  metodo_pago Metodo_Pago @relation(fields: [id_metodo_pago], references: [id_metodo_pago])
+
+  //realcionarse
+  detalle_pedido Detalle_Pedido[]
+}
+
+model Metodo_Pago {
+  id_metodo_pago Int     @id @default(autoincrement())
+  nombre         String
+  is_active      Boolean
+
+  //para relacioanrse
+  pedido_online Pedido_Online[]
+  venta         Venta[]
+}
+
+model Detalle_Pedido {
+  id_detalle_pedido Int   @id @default(autoincrement())
+  id_pedido_online  Int
+  id_producto       Int
+  cantidad          Int
+  precio_unitario   Float
+  subtotal          Float
+
+  pedido_online Pedido_Online @relation(fields: [id_pedido_online], references: [id_pedido])
+  producto      Producto      @relation(fields: [id_producto], references: [id_producto])
+}
+
+model Venta {
+  id_venta       Int      @id @default(autoincrement())
+  id_usuario     Int
+  id_sucursal    Int
+  id_metodo_pago Int
+  fecha_venta    DateTime
+  subtotal       Float
+  impuestos      Float
+  descuento      Float
+  monto_total    Float
+  tipo_venta     String
+  estado         String
+  createdAt      DateTime @default(now())
+  updateAt       DateTime @updatedAt
+  created_by     Int
+  updated_by     Int
+
+  usuario     Usuario     @relation(fields: [id_usuario], references: [id_usuario])
+  sucursal    Sucursal    @relation(fields: [id_sucursal], references: [id_sucursal])
+  metodo_pago Metodo_Pago @relation(fields: [id_metodo_pago], references: [id_metodo_pago])
+
+  detalle_venta Detalle_Venta[]
+}
+
+model Detalle_Venta {
+  id_detalle_venta Int   @id @default(autoincrement())
+  id_venta         Int
+  id_producto      Int
+  cantidad         Int
+  precio_unitario  Float
+  subtotal         Float
+
+  venta    Venta    @relation(fields: [id_venta], references: [id_venta])
+  producto Producto @relation(fields: [id_producto], references: [id_producto])
+}
+
+model Evento_Promocion {
+  id_evento       Int      @id @default(autoincrement())
+  nombre          String
+  descripcion     String?
+  fecha_inicio    DateTime
+  fecha_fin       DateTime
+  descuento_monto Float
+  is_active       Boolean
+  createdAt       DateTime @default(now())
+  updateAt        DateTime @updatedAt
+  created_by      Int
+  updated_by      Int
+
+  producto_promocion Producto_Promocion[]
+}
+
+model Producto_Promocion {
+  id_prod_prom         Int   @id @default(autoincrement())
+  id_producto          Int
+  id_evento            Int
+  descuento_especifico Float
+
+  evento_promocion Evento_Promocion @relation(fields: [id_evento], references: [id_evento])
+  producto         Producto         @relation(fields: [id_producto], references: [id_producto])
+}

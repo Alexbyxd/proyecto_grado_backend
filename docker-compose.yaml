@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: admin # Puedes cambiar 'usuario' por tu nombre de usuario
+      POSTGRES_PASSWORD: password # Puedes cambiar 'contraseña' por tu contraseña
+      POSTGRES_DB: db_grado_backend # Puedes cambiar 'mi_base_de_datos' por el nombre de tu base de datos
+    ports:
+      - "5480:5432"
+
