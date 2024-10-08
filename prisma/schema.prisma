@@ -19,7 +19,7 @@ model Usuario {
   id_sucursal   Int
   nombre        String
   apellido      String
-  email         String
+  email         String @unique
   password_hash String
   createdAt     DateTime @default(now())
   updateAt      DateTime @updatedAt
@@ -111,7 +111,7 @@ model Categoria {
   id_categoria Int      @id @default(autoincrement())
   nombre       String   @unique
   descripcion  String?
-  genero       String
+  genero       String?
   createdAt    DateTime @default(now())
   updateAt     DateTime @updatedAt
   created_by   Int
